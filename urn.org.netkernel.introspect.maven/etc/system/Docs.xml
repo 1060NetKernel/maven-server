@@ -1,0 +1,17 @@
+<docs>
+
+	<doc>
+		<id>doc:introspect:maven:guide</id>
+		<title>Maven Guide</title>
+		<desc>A guide to the introspected dynamic maven repository server</desc>
+		<uri>res:/org/netkernel/introspect/maven/doc/guide.txt</uri>
+	</doc>
+
+	<doc>
+		<id>doc:introspect:maven:license</id>
+		<title>License</title>
+		<desc>License information for Maven server module</desc>
+    	<uri>res:/org/netkernel/introspect/maven/doc/license.txt</uri>
+	</doc>
+
+</docs>

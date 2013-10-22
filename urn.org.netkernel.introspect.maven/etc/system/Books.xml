@@ -1,0 +1,17 @@
+<books>
+  <book>
+    <id>book:urn:org:netkernel:introspect:maven</id>
+    <title>Maven Repository Server</title>
+    <desc>Documentation for the dynamically introspected maven repository server</desc>
+    <author/>
+    <publisher/>
+    <date/>
+    <modified>/</modified>
+    <!-- <icon>res:/org/netkernel/lang/groovy/img/icon.png</icon> -->
+    <keywords/>
+    <toc>
+      <item id="doc:introspect:maven:guide"/>
+      <item id="doc:introspect:maven:license"/>
+    </toc>
+  </book>
+</books>

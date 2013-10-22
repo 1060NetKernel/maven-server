@@ -1,0 +1,22 @@
+<config>
+	<endpoint>
+		<meta>
+			<rest>
+				<simple>{path}</simple>
+				<Etag>MD5</Etag>
+				<compress/>
+			</rest>
+		</meta>
+		<grammar>
+			<active>
+				<identifier>active:mavenRESTServer</identifier>
+				<argument name="path"/>
+			</active>
+		</grammar>
+		<request>
+			<identifier>active:groovy</identifier>
+			<argument name="operator">res:/resources/mavenRESTServer.gy</argument>
+			<argument name="path">arg:path</argument>
+		</request>
+	</endpoint>
+</config>

@@ -1,0 +1,96 @@
+<module version="2.0">
+	<meta>
+		<identity>
+			<uri>urn:org:netkernel:introspect:maven</uri>
+			<version>1.1.1</version>
+		</identity>
+		<info>
+			<name>Maven / Introspected Repository Server</name>
+			<description>A Maven repository derived from introspecting the deployed NetKernel System</description>
+		</info>
+	</meta>
+	<system>
+		<dynamic/>
+	</system>
+
+	<rootspace name="Maven - Core Application Space" public="true">
+		<!--***********************************
+			Application Space - presents all paths
+			*****************************************-->
+		<overlay>
+			<prototype>RESTOverlay</prototype>
+			<config>
+				<basepath>/netkernel-maven/</basepath>
+			</config>
+			<space>
+				<mapper>
+					<config>res:/resources/mapperConfig.xml</config>
+					<space name="Maven - Mapped Space">
+						<import>
+							<uri>urn:org:netkernel:introspect:maven:common</uri>
+						</import>
+					</space>
+				</mapper>
+			</space>
+		</overlay>
+		<accessor>
+			<grammar>
+				<active>
+					<identifier>active:MavenLibraryIntrospect</identifier>
+				</active>
+			</grammar>
+			<class>org.netkernel.introspect.maven.endpoint.LibraryIntrospectAccessor</class>
+		</accessor>
+		<import>
+			<private/>
+			<uri>urn:org:netkernel:introspect:maven:common</uri>
+		</import>
+		<import>
+			<private/>
+			<uri>urn:org:netkernel:tpt:http</uri>
+		</import>
+		<fileset>
+			<regex>res:/etc/system/SimpleDynamicImportHook.xml</regex>
+		</fileset>
+	</rootspace>
+	
+	
+	<rootspace name="Maven - Common Toolbox" uri="urn:org:netkernel:introspect:maven:common" public="false">
+		<!--***********************************
+			Common resources:
+				Local Filesets
+				Imports of language libraries, http, etc
+			*******************************************-->
+		<fileset>
+			<regex>res:/resources/.*</regex>
+		</fileset>
+		<import>
+			<uri>urn:org:netkernel:lang:groovy</uri>
+		</import>
+		<import>
+			<uri>urn:org:netkernel:ext:layer1</uri>
+		</import>
+		<import>
+			<uri>urn:org:netkernel:xml:core</uri>
+		</import>
+		<import>
+  			<uri>urn:org:netkernel:mod:security</uri>
+		</import>
+	</rootspace>
+	
+	<rootspace name="Maven - Documentation" uri="urn:org:netkernel:introspect:maven:doc" public="true">
+		<!--***********************************
+			Common resources:
+				Local Filesets
+				Imports of language libraries, http, etc
+			*******************************************-->
+		<fileset>
+			<regex>res:/etc/system/(Books|Docs)\.xml</regex>
+		</fileset>
+		<fileset>
+			<regex>res:/org/netkernel/introspect/maven/doc/.*</regex>
+		</fileset>
+		
+	</rootspace>
+
+</module>

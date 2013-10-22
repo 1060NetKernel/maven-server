@@ -1,0 +1,84 @@
+==Dynamic Maven Server==
+
+The dynamic [http://maven.apache.org/|Maven] server provides a maven repository comprising the core NetKernel system libraries.  The following parts of NetKernel are dynamically introspected and logically mapped into a
+maven repository REST structure.
+
+*[ install ] / lib / *.jar - the core NetKernel foundation libraries including the NetKernel kernel, kernel API, layer0, standard module and cache.
+*[ install ] / modules / urn.org.netkernel.*.jar  - modules provided as part of the NKEE/NKSE installation which export a classpath.
+
+==Important Requirement==
+
+The Maven server will only introspectively discover jarred libraries and modules.  It is therefore essential that if you are setting up a NetKernel as your maven repository server that when
+you install it, you do '''*not*''' choose the "expand jarred libraries" option in the installer.
+ 
+==Interface==
+ 
+The Maven repository runs on the Front-End-Fulcrum server at:
+ 
+http://localhost:8080/netkernel-maven/
+
+To use a repository with a CI or remote build system then make sure to replace "localhost" with the hostname of your NetKernel instance.
+
+====Core Libraries====
+
+The core libraries (discovered in lib/ ) can be found on the following logical maven path...
+
+http://localhost:8080/netkernel-maven/urn/com/ten60/core/
+
+Core libraries belong to the '''urn.com.ten60.core''' group.  Each maven library artifact is named with a short name derived from the name of the introspected jar.
+
+For example...
+
+lib / urn.com.ten60.core.module.standard-x.x.x.jar
+
+Appears in the maven repository as...
+
+{literal}
+group: urn.com.ten60.core
+artifactId:  module.standard
+version: x.x.x
+{/literal}
+
+====Module Libraries====
+
+System modules that export a classpath can be found on the following path...
+
+http://localhost:8080/netkernel-maven/urn/org/netkernel/
+
+Module libraries belong to the '''urn.org.netkernel''' group.  A maven module library artifact is named with a short name derived from the shipped jar.
+
+For example...
+
+modules / urn.org.netkernel.lang.groovy-x.x.x.jar
+
+Appears in the maven repository as...
+
+{literal}
+group: urn.org.netkernel
+artifactId:  lang.groovy
+version: x.x.x
+{/literal}
+
+Please note, only jarred modules that export a classpath are considered for inclusion in the logical maven repository - since if a module doesn't export a classpath there would be no point attempting to build against it.
+
+====Expanded Module Jars====
+
+If a module contains jars in a lib/ directory then these are considered to be dependencies and mapped into the special group '''urn.org.netkernel.expanded.lib''' in the maven repository - the expanded lib jars
+are uniquely identified with the version number of the module from which they are exported.   They can be found on the following path...
+
+http://localhost:8080/netkernel-maven/urn/org/netkernel/expanded/lib/
+
+Please note that if you build against a module that has expanded lib jars then these will be automatically included as classpath dependencies.
+
+==Dynamic Introspection==
+
+The Maven repository is a logical constuct that is created by transforming a "discovered library resource" that is provided by an accessor that actively introspects a live system.   Since this resource is in the ROC domain
+it is cached and the logical maven repository resources are also cached.
+
+Whenever updates to the NetKernel system are made (via apposite) then new libraries will be automatically discovered and immediately appear in the logical maven repository.  
+
+==Acknowledgements==
+
+The idea of a dynamically introspected maven repository was first proposed by Brian Sletten.   Both Brian and Randy Kahle provided feedback and testing during development. 
+
+

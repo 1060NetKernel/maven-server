@@ -1,0 +1,321 @@
+import org.netkernel.layer0.representation.*;
+import org.netkernel.layer0.representation.impl.*;
+import org.netkernel.urii.impl.*;
+import java.text.*;
+
+path=context.getThisRequest().getArgumentValue("path")
+libs=context.source("active:MavenLibraryIntrospect", IHDSNode.class)
+code=200;
+
+resp=null;
+if(path.contains("maven-metadata"))
+{	
+	if(path.endsWith("xml"))
+	{
+		p=null;
+		pa=path.split("/")
+		p=pa[pa.length-2]
+		n=libs.getFirstNode("//"+p).getParent()
+		
+		resp="Metadata";
+		b=new HDSBuilder();
+		b.pushNode("metadata")
+		b.addNode("groupId", n.getParent().getXPath().replaceAll("/", ".").substring(1))
+		artifactId=n.getFirstValue("name")
+		b.addNode("artifactId",artifactId)
+		b.pushNode("versioning")
+		
+		b.pushNode("versions")
+		//Iterate over versions here
+		s="//"+n.getFirstValue("name")
+		r=n;
+		while(r.getParent()!=null)
+		{	r=r.getParent();					
+		}
+		c=r.getNodes(s)
+		map=new HashMap();
+		for(int i=0; i<c.size(); i++)
+		{	v=c.get(i).getParent().getFirstValue("version");
+			vs=new Version(v)
+			map.put(vs, v);
+		}
+		for(key in map.keySet().sort())
+		{	v=map.get(key);
+			b.addNode("version",v)
+		}
+		
+		b.popNode()
+		max=b.getRoot().getFirstValue("/metadata/versioning/versions/version[1]");
+		b.addNode("release", max );
+		n=r.getFirstNode("//"+artifactId+max)
+		uri=n.getParent().getFirstValue("uri")
+		f=new File(URI.create(uri))
+		lm=new Date(f.lastModified());
+		sdf=new SimpleDateFormat("yyyyMMddHHmmss")
+		sb=new StringBuffer();
+		sdf.format(lm, sb, new FieldPosition(DateFormat.MONTH_FIELD))
+		b.addNode("lastModified", sb.toString())
+		resp=context.createResponseFrom(b.getRoot())
+		resp.setMimeType("text/xml");
+		resp.setHeader("httpResponse:/code", code);
+		return;
+	}
+	else if(path.endsWith("md5"))
+	{	path="active:mavenRESTServer+path@"+path.replaceAll("md5", "xml")
+		req=context.createRequest("active:md5sum")
+		req.addArgument("operand", path);
+		resp=context.issueRequest(req);
+		resp=context.createResponseFrom(resp)
+		resp.setHeader("httpResponse:/code", code);
+		resp.setMimeType("text/plain");
+		return;
+		
+	}
+	else if(path.endsWith("sha1"))
+	{	path="active:mavenRESTServer+path@"+path.replaceAll("sha1", "xml")
+		req=context.createRequest("active:sha1sum")
+		req.addArgument("operand", path);
+		resp=context.issueRequest(req);
+		resp=context.createResponseFrom(resp)
+		resp.setHeader("httpResponse:/code", code);
+		resp.setMimeType("text/plain");
+		return;
+		
+	}
+}
+if(path.contains(".pom"))
+{
+	pa=path.split("/")
+	jar=pa[pa.length-1].replaceAll("pom.*", "jar")
+	pa=path.split(jar.substring(0, jar.indexOf("-")))
+	base=pa[0].replaceAll("/", ".");
+	
+	n=libs.getFirstNode("//"+base+jar).getParent();
+	
+	if(path.endsWith("pom"))
+	{
+		b=new HDSBuilder()
+		b.pushNode("project")
+		b.addNode("@xmlns", "http://maven.apache.org/POM/4.0.0")
+		b.addNode("@xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+		b.addNode("@xsi:schemaLocation", "http://maven.apache.org/POM/4.0.0\nhttp://maven.apache.org/xsd/maven-4.0.0.xsd")
+		b.addNode("modelVersion", "4.0.0")
+		b.addNode("groupId", n.getParent().getXPath().replaceAll("/", ".").substring(1))
+		artifactId=n.getFirstValue("name")
+		b.addNode("artifactId", artifactId)
+		b.addNode("packaging", "jar")
+		b.addNode("version", n.getFirstValue("version"))
+		b.addNode("name", n.getFirstValue("name")+"  **AUTO GENERATED - WILL BE MAPPED TO STATIC TEXT DESCRIPTION FOR CORE LIBS**")
+		//Find hostname
+		hostname=context.source("httpRequest:/url")
+		hostname=hostname.substring(0, hostname.indexOf("/netkernel-maven/"));
+		b.addNode("url", hostname+"/netkernel-maven/")
+		//Dependencies
+		n=n.getNodes("//dependency")
+		if(n.size()>0)
+		{	b.pushNode("dependencies")
+			for(int i=0; i<n.size(); i++)
+			{	m=n.get(i);
+				b.importNode(m);
+			}
+		}
+		resp=context.createResponseFrom(b.getRoot())
+		resp.setMimeType("text/xml");
+		resp.setHeader("httpResponse:/code", code);
+		return;
+	}
+	else if(path.endsWith("md5"))
+	{	path="active:mavenRESTServer+path@"+path.replaceAll(".md5", "")
+		req=context.createRequest("active:md5sum")
+		req.addArgument("operand", path);
+		resp=context.issueRequest(req);
+		resp=context.createResponseFrom(resp)
+		resp.setHeader("httpResponse:/code", code);
+		resp.setMimeType("text/plain");
+		return;
+		
+	}
+	else if(path.endsWith("sha1"))
+	{	path="active:mavenRESTServer+path@"+path.replaceAll(".sha1", "")
+		req=context.createRequest("active:sha1sum")
+		req.addArgument("operand", path);
+		resp=context.issueRequest(req);
+		resp=context.createResponseFrom(resp)
+		resp.setHeader("httpResponse:/code", code);
+		resp.setMimeType("text/plain");
+		return;
+		
+	}
+}
+if(path.endsWith(".jar"))
+{	pa=path.split("/")
+	jar=pa[pa.length-1]
+	pa=path.split(jar.substring(0, jar.indexOf("-")))
+	base=pa[0].replaceAll("/", ".");
+	println(base+jar);
+	n=libs.getFirstNode("//"+base+jar)
+	uri=n.getParent().getFirstValue("uri");
+	resp=context.sourceForResponse(uri);
+	resp=context.createResponseFrom(resp)
+	resp.setHeader("httpResponse:/code", code);
+	return;
+}
+else if(path.endsWith(".md5"))
+{	pa=path.split("/")
+	jar=pa[pa.length-1].replaceAll("\\.md5", "");
+	pa=path.split(jar.substring(0, jar.indexOf("-")))
+	base=pa[0].replaceAll("/", ".");
+	n=libs.getFirstNode("//"+base+jar)
+	uri=n.getParent().getFirstValue("uri");
+	req=context.createRequest("active:md5sum")
+	req.addArgument("operand", uri);
+	resp=context.issueRequest(req);
+	resp=context.createResponseFrom(resp)
+	resp.setHeader("httpResponse:/code", code);
+	resp.setMimeType("text/plain");
+	return;
+}
+else if(path.endsWith(".sha1"))
+{	pa=path.split("/")
+	jar=pa[pa.length-1].replaceAll("\\.sha1", "");
+	pa=path.split(jar.substring(0, jar.indexOf("-")))
+	base=pa[0].replaceAll("/", ".");
+	n=libs.getFirstNode("//"+base+jar)
+	uri=n.getParent().getFirstValue("uri");
+	req=context.createRequest("active:sha1sum")
+	req.addArgument("operand", uri);
+	resp=context.issueRequest(req);
+	resp=context.createResponseFrom(resp)
+	resp.setHeader("httpResponse:/code", code);
+	resp.setMimeType("text/plain");
+	return;
+}
+else
+{	p=null;
+	if(path.equals(""))
+	{	path="/";
+		p="/"
+	}
+	else
+	{	pa=path.split("/")
+		p=pa[pa.length-1]
+	}
+	//Test if we're a version?
+	if(p.matches("\\d+\\.\\d+\\.\\d+"))
+	{	//We're a version
+		p=pa[pa.length-2]+pa[pa.length-1]
+		n=libs.getFirstNode("//"+p);
+		if(n!=null)
+		{
+			p=n.getParent();
+			name=p.getFirstValue("name")
+			version=p.getFirstValue("version")
+			resp="""<div>
+						<a href=".."><-- Parent</a>
+						<br/>
+						<br/>
+						<a href="./${name}-${version}.jar">${name}-${version}.jar</a>
+						<br/>
+						<a href="./${name}-${version}.jar.md5">${name}-${version}.jar.md5</a>
+						<br/>
+						<a href="./${name}-${version}.jar.sha1">${name}-${version}.jar.sha1</a>
+						<br/>
+						<a href="./${name}-${version}.pom">${name}-${version}.pom</a>
+						<br/>
+						<a href="./${name}-${version}.pom.md5">${name}-${version}.pom.md5</a>
+						<br/>
+						<a href="./${name}-${version}.pom.sha1">${name}-${version}.pom.sha1</a>
+					</div>
+						""";
+		}
+		else
+		{ resp="UNKNOWN";
+		  code=404;
+		}
+	}
+	else
+	{	//Try the path sub-part to see if this is an artifact
+		n=libs.getFirstNode("//"+p)
+		if(n!=null)
+		{	
+			parent=n.getParent();
+			if(parent!=null && parent.getName().equals("artifact"))
+			{	s="//"+n.getParent().getFirstValue("name")
+				r=n;
+				while(r.getParent()!=null)
+				{	r=r.getParent();					
+				}
+				c=r.getNodes(s)
+				resp="""<div>
+						<a href=".."><-- Parent</a>
+						<br/>
+						<br/>
+						""";
+				map=new HashMap();
+				for(int i=0; i<c.size(); i++)
+				{	v=c.get(i).getParent().getFirstValue("version");
+					vs=new Version(v)
+					map.put(vs, c.get(i));
+				}
+				for(key in map.keySet().sort())
+				{	v=map.get(key);
+					path=v.getParent().getXPath()+"/"+key+"/";
+					resp+="""<a href="./$key/">$key/</a><br/>"""
+				}
+				resp+="""<br/>
+						<a href="maven-metadata.xml">maven-metadata.xml</a><br/>
+						<a href="maven-metadata.md5">maven-metadata.md5</a><br/>
+						<a href="maven-metadata.sha1">maven-metadata.sha1</a><br/>
+						</div>"""
+						
+			}
+			else
+			{	//Regular navigation
+				n=libs.getFirstNode(path)
+				if(n==null)
+				{	resp="UNKNOWN";
+					code=404;
+				}
+				else
+				{	
+					c=n.getChildren();
+					resp="""<div>
+						<a href=".."><-- Parent</a>
+						<br/>
+						<br/>
+						""";
+					map=new HashMap();			
+					for(int i=0; i<c.length; i++)
+					{
+						cn=c[i].getName();
+						if(cn.equals("artifact"))
+						{
+							cn=c[i].getFirstValue("name");
+							if(map.get(cn)==null)
+							{	map.put(cn, c[i]);
+							}
+						}
+						else
+						{	path=c[i].getXPath();
+							resp+="""<a href="/netkernel-maven$path">$cn/</a><br/>"""
+						}
+					}
+					for(key in map.keySet().sort())
+					{	n=map.get(key)
+						cn=n.getFirstValue("name");
+						path=n.getParent().getXPath()+"/"+cn+"/";
+						resp+="""<a href="/netkernel-maven$path">$cn/</a><br/>"""
+					}
+					resp+="</div>"
+				}
+			}
+		}
+	}
+}
+
+resp+="""<img src="http://www.1060research.com/netkernel/poweredbynetkernel.png" style="padding: 20px;"/>""";
+resp="<html><body><h1>NetKernel Introspected Maven Repository</h1>"+resp+"</body></html>";
+
+resp=context.createResponseFrom(resp.toString())
+resp.setMimeType("text/html")
+resp.setHeader("httpResponse:/code", code);

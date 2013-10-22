@@ -1,0 +1,19 @@
+<dependencies>
+	<netkernel.impl>netkernel.api</netkernel.impl>
+	<boot>netkernel.api</boot>
+	<boot>netkernel.impl</boot>
+	<boot>cache.se</boot>
+	<boot>layer0</boot>
+	<boot>module.standard</boot>
+	<layer0>netkernel.api</layer0>
+	<layer0>netkernel.impl</layer0>
+	<module.standard>netkernel.api</module.standard>
+	<module.standard>netkernel.impl</module.standard>
+	<module.standard>layer0</module.standard>
+	<cache.se>netkernel.api</cache.se>
+	<cache.se>netkernel.impl</cache.se>
+	<cache.se>layer0</cache.se>
+	<cache.ee>netkernel.api</cache.ee>
+	<cache.ee>netkernel.impl</cache.ee>
+	<cache.ee>layer0</cache.ee>
+</dependencies>
